@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">Project Flow</h2>
+                <ol class="mb-4">
+                    <li>User registers with username, password, and a live face capture.</li>
+                    <li>System stores only the face encoding in SQLite, not the raw image.</li>
+                    <li>User logs in with username/password and a live face capture.</li>
+                    <li>System verifies password and face match.</li>
+                </ol>
+
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

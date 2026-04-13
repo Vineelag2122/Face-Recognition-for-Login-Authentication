@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-2">Hello, {{ username }}!</h2>
+                <p class="text-muted mb-4">You are logged in. Here is your latest login verification summary.</p>
+
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="border rounded p-3 h-100">
+                            <h3 class="h6 mb-3">Face Match Details</h3>
+                            <p class="mb-1">
+                                <strong>Face verification:</strong>
+                                {% if login_summary.get('is_face_match') %}
+                                    <span class="text-success">Passed</span>
+                                {% else %}
+                                    <span class="text-danger">Failed</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Face distance:</strong> {{ login_summary.get('distance', 'N/A') }}</p>
+                            <p class="mb-0"><strong>Login time:</strong> {{ login_summary.get('logged_in_at', 'N/A') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="h5 mb-3">Change Passcode</h3>
+                <form method="POST" action="{{ url_for('dashboard') }}">
+                    <input type="hidden" name="form_action" value="change_password" />
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="current_password" class="form-label">Current Passcode</label>
+                            <input type="password" id="current_password" name="current_password" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="new_password" class="form-label">New Passcode</label>
+                            <input type="password" id="new_password" name="new_password" class="form-control" minlength="6" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="confirm_password" class="form-label">Confirm New Passcode</label>
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="6" required />
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-primary">Update Passcode</button>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary">Logout</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body p-4">
+                <h3 class="h5 mb-3">Update Face Profile</h3>
+                <p class="text-muted mb-3">Capture a new live photo to update your saved face encoding.</p>
+
+                <form method="POST" id="face-update-form" action="{{ url_for('dashboard') }}">
+                    <input type="hidden" name="form_action" value="change_face_profile" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="face_password" class="form-label">Current Passcode</label>
+                            <input type="password" id="face_password" name="face_password" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" id="start-face-camera" class="btn btn-outline-primary">Start Camera for Face Update</button>
+                    </div>
+
+                    <input type="hidden" id="face_image_data" name="face_image_data" />
+                    <div class="camera-box mb-3 mt-3 d-none" id="face-camera-box">
+                        <video id="face-camera-video" class="w-100 rounded border" autoplay playsinline></video>
+                        <canvas id="face-camera-canvas" class="d-none"></canvas>
+                    </div>
+                    <p id="face-camera-status" class="form-text mb-0">
+                        Camera is off. Click "Start Camera for Face Update" to begin.
+                    </p>
+
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-success">Update Face Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='camera.js') }}"></script>
+<script>
+    const faceFormElement = document.getElementById('face-update-form');
+    const faceVideoElement = document.getElementById('face-camera-video');
+    const faceCanvasElement = document.getElementById('face-camera-canvas');
+    const faceHiddenInput = document.getElementById('face_image_data');
+    const faceStatusElement = document.getElementById('face-camera-status');
+    const startFaceCameraButton = document.getElementById('start-face-camera');
+    const faceCameraBox = document.getElementById('face-camera-box');
+
+    let faceCameraStarted = false;
+    let faceSubmitBound = false;
+
+    startFaceCameraButton.addEventListener('click', async () => {
+        if (faceCameraStarted) {
+            faceStatusElement.textContent = 'Camera is already active. Keep your face centered and submit when ready.';
+            return;
+        }
+
+        try {
+            await FaceCamera.startCamera(faceVideoElement, faceStatusElement);
+            faceCameraBox.classList.remove('d-none');
+            faceCameraStarted = true;
+
+            if (!faceSubmitBound) {
+                FaceCamera.bindAutoCaptureOnSubmit(
+                    faceFormElement,
+                    faceVideoElement,
+                    faceCanvasElement,
+                    faceHiddenInput,
+                    faceStatusElement
+                );
+                faceSubmitBound = true;
+            }
+        } catch (error) {
+            faceStatusElement.textContent = 'Camera access failed. Please allow camera permission and try again.';
+        }
+    });
+</script>
+{% endblock %}

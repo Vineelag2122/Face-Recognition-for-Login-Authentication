@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">Login</h2>
+                <form method="POST" id="camera-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" required />
+                    </div>
+                    <input type="hidden" id="face_image_data" name="face_image_data" />
+                    <div class="camera-box mb-3">
+                        <video id="camera-video" class="w-100 rounded border" autoplay playsinline></video>
+                        <canvas id="camera-canvas" class="d-none"></canvas>
+                    </div>
+                    <p id="camera-status" class="form-text">Starting camera. Keep your face centered before login capture.</p>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">Verify Password and Face</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='camera.js') }}"></script>
+<script>
+    const formElement = document.getElementById('camera-form');
+    const videoElement = document.getElementById('camera-video');
+    const canvasElement = document.getElementById('camera-canvas');
+    const hiddenInput = document.getElementById('face_image_data');
+    const statusElement = document.getElementById('camera-status');
+
+    FaceCamera.startCamera(videoElement, statusElement);
+    FaceCamera.bindAutoCaptureOnSubmit(formElement, videoElement, canvasElement, hiddenInput, statusElement);
+</script>
+{% endblock %}
