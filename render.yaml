@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: face-auth-project
+    env: python
+    buildCommand: |
+      apt-get update && apt-get install -y cmake build-essential
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app
